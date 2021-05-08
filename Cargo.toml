@@ -3,6 +3,11 @@ name = "concat-arrays"
 version = "0.1.0"
 authors = ["Andrew Cann <shum@canndrew.org>"]
 edition = "2018"
+description = "A macro for concatenating fixed-size arrays"
+documentation = "https://docs.rs/concat-arrays"
+repository = "https://github.com/canndrew/concat-arrays"
+keywords = ["macro", "array"]
+license = "LGPL-2.0"
 
 [lib]
 proc-macro = true

@@ -35,9 +35,9 @@ impl Parse for Args {
 /// # Limitations
 ///
 /// Due to limitations in rust `concat_arrays!` can't tell the compiler what the length of the
-/// returned array is. As such, the length needs to be inferrable from the surrounding context. For
+/// returned array is. As such, the length needs to be inferable from the surrounding context. For
 /// example, in the example above the length is inferred by the call to `assert_eq!`. It is safe to
-/// mis-specify the length however - you'll just get a compilation error rather than broken code.
+/// mis-specify the length however since you'll get a compilation error rather than broken code.
 #[proc_macro]
 pub fn concat_arrays(tokens: TokenStream) -> TokenStream {
     let arrays = syn::parse_macro_input!(tokens as Args);
