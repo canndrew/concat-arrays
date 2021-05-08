@@ -1,11 +1,11 @@
 use {
-    syn::{
-        Expr,
-        punctuated::Punctuated,
-        parse::{Parse, ParseStream},
-    },
     proc_macro::TokenStream,
     quote::{format_ident, quote},
+    syn::{
+        parse::{Parse, ParseStream},
+        punctuated::Punctuated,
+        Expr,
+    },
 };
 
 struct Args {
@@ -101,7 +101,6 @@ pub fn concat_arrays(tokens: TokenStream) -> TokenStream {
     }};
     ret.into()
 }
-
 
 #[proc_macro]
 pub fn concat_const_arrays(tokens: TokenStream) -> TokenStream {
