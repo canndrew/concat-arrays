@@ -1,4 +1,41 @@
-use concat_arrays::concat_arrays;
+use concat_arrays::*;
+
+#[test]
+fn concat_const_arrays() {
+    const A0: [u8; 0] = [];
+    const A1: [u8; 1] = [0];
+    const A2: [u8; 2] = [1, 2];
+    const A3: [u8; 3] = [3, 4, 5];
+
+    const S1: [&str; 1] = ["Hello"];
+    const S2: [&str; 2] = ["World", "!"];
+
+    let _s = concat_const_arrays!(&str, S1, S2);
+    assert_eq!(_s, ["Hello", "World", "!"]);
+
+    let _b0 = concat_const_arrays!(u8);
+    let _b0 = concat_const_arrays!(u8, A0);
+    let _b0 = concat_const_arrays!(u8, A0,);
+
+    let b1 = concat_const_arrays!(u8, A1);
+    assert_eq!(b1, [0]);
+    let b1 = concat_const_arrays!(u8, A1,);
+    assert_eq!(b1, [0]);
+    let b1 = concat_const_arrays!(u8, A0, A1);
+    assert_eq!(b1, [0]);
+    let b1 = concat_const_arrays!(u8, A0, A1,);
+    assert_eq!(b1, [0]);
+
+    let b3 = concat_const_arrays!(u8, A0, A1, A2);
+    assert_eq!(b3, [0, 1, 2]);
+    let b3 = concat_const_arrays!(u8, A0, A1, A2,);
+    assert_eq!(b3, [0, 1, 2]);
+
+    let b6 = concat_const_arrays!(u8, A0, A1, A2, A3);
+    assert_eq!(b6, [0, 1, 2, 3, 4, 5]);
+    let b6 = concat_const_arrays!(u8, A0, A1, A2, A3,);
+    assert_eq!(b6, [0, 1, 2, 3, 4, 5]);
+}
 
 #[test]
 fn concat_some_byte_arrays() {
