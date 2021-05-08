@@ -42,17 +42,18 @@ impl Parse for Args {
 pub fn concat_arrays(tokens: TokenStream) -> TokenStream {
     let arrays = syn::parse_macro_input!(tokens as Args);
     let arrays: Vec<Expr> = arrays.punctuated.into_iter().collect();
+    let num_arrays = arrays.len();
     let field_names = {
-        let mut field_names = Vec::with_capacity(arrays.len());
-        for i in 0..arrays.len() {
+        let mut field_names = Vec::with_capacity(num_arrays);
+        for i in 0..num_arrays {
             field_names.push(format_ident!("concat_arrays_arg_{}", i));
         }
         field_names
     };
     let define_concat_arrays_type = {
         let type_arg_names = {
-            let mut type_arg_names = Vec::with_capacity(arrays.len());
-            for i in 0..arrays.len() {
+            let mut type_arg_names = Vec::with_capacity(num_arrays);
+            for i in 0..num_arrays {
                 type_arg_names.push(format_ident!("ConcatArraysArg{}", i));
             }
             type_arg_names
@@ -64,37 +65,42 @@ pub fn concat_arrays(tokens: TokenStream) -> TokenStream {
             }
         }
     };
+    let num_arrays_plus_one = num_arrays + 1;
     let ret = quote! {{
         #(
             let #field_names = #arrays;
         )*
         if false {
-            fn constrain_concat_arrays_argument_to_be_an_array<const ARRAY_ARG_LEN: usize>(
-                concat_arrays_arg: &[u8; ARRAY_ARG_LEN],
+            fn constrain_concat_arrays_argument_to_be_an_array<T, const ARRAY_ARG_LEN: usize>(
+                concat_arrays_arg: &[T; ARRAY_ARG_LEN],
             ) {
                 let _ = concat_arrays_arg;
             }
             #(
                 constrain_concat_arrays_argument_to_be_an_array(&#field_names);
             )*
-        }
-        loop {
+            fn infer_length_of_concatenated_array<T, const INFERRED_LENGTH_OF_CONCATENATED_ARRAY: usize>()
+                -> [T; INFERRED_LENGTH_OF_CONCATENATED_ARRAY]
+            {
+                ::core::unreachable!()
+            }
+            let concatenated_array = infer_length_of_concatenated_array();
+            let _constrain_array_element_types_to_be_equal: [&[_]; #num_arrays_plus_one] = [
+                &concatenated_array[..],
+                #(
+                    &#field_names[..],
+                )*
+            ];
+            concatenated_array
+        } else {
             #define_concat_arrays_type
 
             let concat_arrays = ConcatArrays {
                 #(#field_names,)*
             };
-            if false {
-                fn infer_length_of_concatenated_array<const INFERRED_LENGTH_OF_CONCATENATED_ARRAY: usize>()
-                    -> [u8; INFERRED_LENGTH_OF_CONCATENATED_ARRAY]
-                {
-                    [0u8; INFERRED_LENGTH_OF_CONCATENATED_ARRAY]
-                }
-                break infer_length_of_concatenated_array();
-            }
-            break unsafe {
+            unsafe {
                 ::core::mem::transmute(concat_arrays)
-            };
+            }
         }
     }};
     ret.into()
