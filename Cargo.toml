@@ -13,7 +13,7 @@ license = "LGPL-2.0"
 proc-macro = true
 
 [dependencies]
-syn = "1.0.72"
+syn = { version = "1.0.72", features = ["full"] }
 quote = "1.0.9"
 proc-macro2 = "1.0.26"
 
