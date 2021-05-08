@@ -69,9 +69,13 @@ pub fn concat_arrays(tokens: TokenStream) -> TokenStream {
             let #field_names = #arrays;
         )*
         if false {
+            fn constrain_concat_arrays_argument_to_be_an_array<const ARRAY_ARG_LEN: usize>(
+                concat_arrays_arg: &[u8; ARRAY_ARG_LEN],
+            ) {
+                let _ = concat_arrays_arg;
+            }
             #(
-                #[allow(unconditional_panic)]
-                let _: u8 = #field_names[0];
+                constrain_concat_arrays_argument_to_be_an_array(&#field_names);
             )*
         }
         loop {
