@@ -43,21 +43,17 @@ pub fn concat_arrays(tokens: TokenStream) -> TokenStream {
     let arrays = syn::parse_macro_input!(tokens as Args);
     let arrays: Vec<Expr> = arrays.punctuated.into_iter().collect();
     let num_arrays = arrays.len();
-    let field_names = {
     let mut field_names = Vec::with_capacity(num_arrays);
     for i in 0..num_arrays {
         field_names.push(format_ident!("concat_arrays_arg_{}", i));
     }
-        field_names
-    };
+
     let define_concat_arrays_type = {
-        let type_arg_names = {
         let mut type_arg_names = Vec::with_capacity(num_arrays);
         for i in 0..num_arrays {
             type_arg_names.push(format_ident!("ConcatArraysArg{}", i));
         }
-            type_arg_names
-        };
+
         quote! {
             #[repr(C)]
             struct ConcatArrays<#(#type_arg_names,)*> {

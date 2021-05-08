@@ -38,7 +38,7 @@ fn concat_const_arrays() {
 }
 
 #[test]
-fn concat_some_byte_arrays() {
+fn concat_byte_arrays() {
     let a0 = [];
     let a1 = [0];
     let a2 = [1, 2];
@@ -69,7 +69,7 @@ fn concat_some_byte_arrays() {
 }
 
 #[test]
-fn concat_some_string_arrays() {
+fn concat_string_arrays() {
     let a0 = [];
     let a1 = [String::from("0")];
     let a2 = [String::from("1"), String::from("2")];
