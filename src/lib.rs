@@ -1,11 +1,11 @@
 use {
-    syn::{
-        Expr,
-        punctuated::Punctuated,
-        parse::{Parse, ParseStream},
-    },
     proc_macro::TokenStream,
     quote::{format_ident, quote},
+    syn::{
+        parse::{Parse, ParseStream},
+        punctuated::Punctuated,
+        Expr,
+    },
 };
 
 struct Args {
@@ -43,21 +43,17 @@ pub fn concat_arrays(tokens: TokenStream) -> TokenStream {
     let arrays = syn::parse_macro_input!(tokens as Args);
     let arrays: Vec<Expr> = arrays.punctuated.into_iter().collect();
     let num_arrays = arrays.len();
-    let field_names = {
-        let mut field_names = Vec::with_capacity(num_arrays);
-        for i in 0..num_arrays {
-            field_names.push(format_ident!("concat_arrays_arg_{}", i));
-        }
-        field_names
-    };
+    let mut field_names = Vec::with_capacity(num_arrays);
+    for i in 0..num_arrays {
+        field_names.push(format_ident!("concat_arrays_arg_{}", i));
+    }
+
     let define_concat_arrays_type = {
-        let type_arg_names = {
-            let mut type_arg_names = Vec::with_capacity(num_arrays);
-            for i in 0..num_arrays {
-                type_arg_names.push(format_ident!("ConcatArraysArg{}", i));
-            }
-            type_arg_names
-        };
+        let mut type_arg_names = Vec::with_capacity(num_arrays);
+        for i in 0..num_arrays {
+            type_arg_names.push(format_ident!("ConcatArraysArg{}", i));
+        }
+
         quote! {
             #[repr(C)]
             struct ConcatArrays<#(#type_arg_names,)*> {
@@ -103,5 +99,50 @@ pub fn concat_arrays(tokens: TokenStream) -> TokenStream {
             }
         }
     }};
+    ret.into()
+}
+
+#[proc_macro]
+pub fn concat_const_arrays(tokens: TokenStream) -> TokenStream {
+    let args = syn::parse_macro_input!(tokens as Args);
+    let mut args: Vec<Expr> = args.punctuated.into_iter().collect();
+
+    if args.is_empty() {
+        panic!("The first argument to concat_const_arrays need to be the array item type");
+    }
+
+    let item_type = args.remove(0);
+    let arrays = args;
+
+    let mut field_names = Vec::with_capacity(arrays.len());
+    for i in 0..arrays.len() {
+        field_names.push(format_ident!("field_{}", i));
+    }
+
+    let mut generic_types = Vec::with_capacity(arrays.len());
+    for i in 0..arrays.len() {
+        generic_types.push(format_ident!("Type{}", i));
+    }
+
+    let concat_size = quote! {
+        (0 #( + #arrays.len())*)
+    };
+
+    let ret = quote! {
+        {
+            #[repr(C)]
+            struct ConcatPlaceholder<#(#generic_types,)*> {
+                #(#field_names: #generic_types,)*
+            }
+
+            let concat_array = ConcatPlaceholder {
+                #(#field_names: #arrays,)*
+            };
+
+            unsafe {
+                *(&concat_array as *const _ as *const [#item_type; #concat_size])
+            }
+        }
+    };
     ret.into()
 }
