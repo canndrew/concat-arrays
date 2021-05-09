@@ -75,3 +75,9 @@ fn concat_some_string_arrays() {
         String::from("5"),
     ]);
 }
+
+#[test]
+fn compile_fail() {
+    let test_cases = trybuild::TestCases::new();
+    test_cases.compile_fail("tests/compile-fail/*.rs");
+}

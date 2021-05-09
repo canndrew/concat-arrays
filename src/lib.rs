@@ -71,6 +71,8 @@ pub fn concat_arrays(tokens: TokenStream) -> TokenStream {
             let #field_names = #arrays;
         )*
         if false {
+            #define_concat_arrays_type
+
             fn constrain_concat_arrays_argument_to_be_an_array<T, const ARRAY_ARG_LEN: usize>(
                 concat_arrays_arg: &[T; ARRAY_ARG_LEN],
             ) {
@@ -79,18 +81,31 @@ pub fn concat_arrays(tokens: TokenStream) -> TokenStream {
             #(
                 constrain_concat_arrays_argument_to_be_an_array(&#field_names);
             )*
+            fn byteify_array<T, const LEN: usize>(array: &[T; LEN]) -> [u8; LEN] {
+                ::core::unreachable!()
+            }
+            let concat_byte_arrays = ConcatArrays {
+                #(#field_names: byteify_array(&#field_names),)*
+            };
             fn infer_length_of_concatenated_array<T, const INFERRED_LENGTH_OF_CONCATENATED_ARRAY: usize>()
-                -> [T; INFERRED_LENGTH_OF_CONCATENATED_ARRAY]
+                -> (
+                    [T; INFERRED_LENGTH_OF_CONCATENATED_ARRAY],
+                    [u8; INFERRED_LENGTH_OF_CONCATENATED_ARRAY],
+                )
             {
                 ::core::unreachable!()
             }
-            let concatenated_array = infer_length_of_concatenated_array();
+            let (concatenated_array, mut concatenated_byte_array) = infer_length_of_concatenated_array();
             let _constrain_array_element_types_to_be_equal: [&[_]; #num_arrays_plus_one] = [
                 &concatenated_array[..],
                 #(
                     &#field_names[..],
                 )*
             ];
+            concatenated_byte_array = unsafe {
+                ::core::mem::transmute(concat_byte_arrays)
+            };
+            ::core::mem::drop(concatenated_byte_array);
             concatenated_array
         } else {
             #define_concat_arrays_type
