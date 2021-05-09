@@ -1,6 +1,6 @@
 [package]
 name = "concat-arrays"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Andrew Cann <shum@canndrew.org>"]
 edition = "2018"
 description = "A macro for concatenating fixed-size arrays"
