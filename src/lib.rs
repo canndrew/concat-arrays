@@ -81,31 +81,35 @@ pub fn concat_arrays(tokens: TokenStream) -> TokenStream {
             #(
                 constrain_concat_arrays_argument_to_be_an_array(&#field_names);
             )*
-            fn byteify_array<T, const LEN: usize>(array: &[T; LEN]) -> [u8; LEN] {
+            #[repr(C)]
+            struct ArrayElement {
+                _unused: u8,
+            }
+            fn un_zst_array<T, const LEN: usize>(array: &[T; LEN]) -> [ArrayElement; LEN] {
                 ::core::unreachable!()
             }
-            let concat_byte_arrays = ConcatArrays {
-                #(#field_names: byteify_array(&#field_names),)*
+            let concat_non_zst_arrays = ConcatArrays {
+                #(#field_names: un_zst_array(&#field_names),)*
             };
             fn infer_length_of_concatenated_array<T, const INFERRED_LENGTH_OF_CONCATENATED_ARRAY: usize>()
                 -> (
                     [T; INFERRED_LENGTH_OF_CONCATENATED_ARRAY],
-                    [u8; INFERRED_LENGTH_OF_CONCATENATED_ARRAY],
+                    [ArrayElement; INFERRED_LENGTH_OF_CONCATENATED_ARRAY],
                 )
             {
                 ::core::unreachable!()
             }
-            let (concatenated_array, mut concatenated_byte_array) = infer_length_of_concatenated_array();
+            let (concatenated_array, mut concatenated_non_zst_array) = infer_length_of_concatenated_array();
             let _constrain_array_element_types_to_be_equal: [&[_]; #num_arrays_plus_one] = [
                 &concatenated_array[..],
                 #(
                     &#field_names[..],
                 )*
             ];
-            concatenated_byte_array = unsafe {
-                ::core::mem::transmute(concat_byte_arrays)
+            concatenated_non_zst_array = unsafe {
+                ::core::mem::transmute(concat_non_zst_arrays)
             };
-            ::core::mem::drop(concatenated_byte_array);
+            ::core::mem::drop(concatenated_non_zst_array);
             concatenated_array
         } else {
             #define_concat_arrays_type

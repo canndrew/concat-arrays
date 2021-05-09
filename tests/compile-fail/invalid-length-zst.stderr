@@ -4,6 +4,6 @@ error[E0512]: cannot transmute between types of different sizes, or dependently-
 6 |     let _: [(); 3] = concat_arrays!(x, y);
   |                      ^^^^^^^^^^^^^^^^^^^^
   |
-  = note: source type: `main::ConcatArrays<[u8; 1], [u8; 1]>` (16 bits)
-  = note: target type: `[u8; 3]` (24 bits)
+  = note: source type: `main::ConcatArrays<[ArrayElement; 1], [ArrayElement; 1]>` (16 bits)
+  = note: target type: `[ArrayElement; 3]` (24 bits)
   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
